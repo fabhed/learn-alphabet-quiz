@@ -1,0 +1,164 @@
+Let's start by creating the server.js file:
+
+server.js
+
+```js
+const express = require("express");
+const path = require("path");
+const app = express();
+const port = 8080;
+
+app.use(express.static(path.join(__dirname, "public")));
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
+```
+
+Next, we will create the package.json file:
+
+package.json
+
+```json
+{
+  "name": "phonetic-alphabet-quiz",
+  "version": "1.0.0",
+  "description": "A quiz app to learn the Swedish and Nato phonetic alphabet",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
+```
+
+Now, let's create the HTML file:
+
+public/index.html
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phonetic Alphabet Quiz</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container mx-auto px-4">
+    <h1 class="text-4xl font-bold my-8">Phonetic Alphabet Quiz</h1>
+    <div id="quiz-container" class="mb-8">
+      <h2 id="letter" class="text-6xl font-bold mb-4"></h2>
+      <form id="quiz-form" class="mb-4">
+        <input id="answer" class="border-2 border-gray-300 p-2 rounded-lg" type="text" placeholder="Enter phonetic word">
+        <button class="bg-blue-500 text-white p-2 rounded-lg ml-2">Submit</button>
+      </form>
+      <div id="result" class="text-2xl"></div>
+    </div>
+    <div id="history" class="mb-8"></div>
+    <div id="tables" class="mb-8">
+      <div id="nato-table" class="mb-4">
+        <button class="bg-blue-500 text-white p-2 rounded-lg mb-2">Toggle Nato Table</button>
+        <table class="hidden w-full"></table>
+      </div>
+      <div id="swedish-table">
+        <button class="bg-blue-500 text-white p-2 rounded-lg mb-2">Toggle Swedish Table</button>
+        <table class="hidden w-full"></table>
+      </div>
+    </div>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
+```
+
+Next, we will create the CSS file:
+
+public/style.css
+
+```css
+.correct {
+  color: green;
+}
+
+.incorrect {
+  color: red;
+}
+```
+
+Finally, we will create the JavaScript file:
+
+public/main.js
+
+```js
+const nato = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel', 'India', 'Juliett', 'Kilo', 'Lima', 'Mike', 'November', 'Oscar', 'Papa', 'Quebec', 'Romeo', 'Sierra', 'Tango', 'Uniform', 'Victor', 'Whiskey', 'X-ray', 'Yankee', 'Zulu'];
+const swedish = ['Adam', 'Bertil', 'Cesar', 'David', 'Erik', 'Filip', 'Gustav', 'Helge', 'Ivar', 'Johan', 'Kalle', 'Ludvig', 'Martin', 'Niklas', 'Olof', 'Petter', 'Quintus', 'Rikard', 'Sigurd', 'Tore', 'Urban', 'Viktor', 'Wilhelm', 'Xerxes', 'Yngve', 'Zäta', 'Åke', 'Ärlig', 'Östen'];
+
+let currentLetter;
+let currentAnswer;
+let score = 0;
+let attempts = 0;
+
+const letterEl = document.getElementById('letter');
+const formEl = document.getElementById('quiz-form');
+const answerEl = document.getElementById('answer');
+const resultEl = document.getElementById('result');
+const historyEl = document.getElementById('history');
+const natoTableEl = document.getElementById('nato-table').querySelector('table');
+const swedishTableEl = document.getElementById('swedish-table').querySelector('table');
+
+function startQuiz() {
+  currentLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  letterEl.textContent = currentLetter;
+  answerEl.value = '';
+  resultEl.textContent = '';
+}
+
+formEl.addEventListener('submit', (e) => {
+  e.preventDefault();
+  attempts++;
+  if (answerEl.value.toLowerCase() === currentAnswer.toLowerCase()) {
+    score++;
+    resultEl.textContent = 'Correct!';
+    resultEl.className = 'correct';
+  } else {
+    resultEl.textContent = 'Incorrect!';
+    resultEl.className = 'incorrect';
+  }
+  historyEl.innerHTML += `<div class="${resultEl.className}">${currentLetter}: ${answerEl.value} (${Math.round(score / attempts * 100)}%)</div>`;
+  startQuiz();
+});
+
+document.getElementById('nato-table').querySelector('button').addEventListener('click', () => {
+  natoTableEl.classList.toggle('hidden');
+});
+
+document.getElementById('swedish-table').querySelector('button').addEventListener('click', () => {
+  swedishTableEl.classList.toggle('hidden');
+});
+
+function populateTable(tableEl, words) {
+  tableEl.innerHTML = '';
+  for (let i = 0; i < words.length; i++) {
+    const row = document.createElement('tr');
+    const letterCell = document.createElement('td');
+    letterCell.textContent = String.fromCharCode(65 + i);
+    const wordCell = document.createElement('td');
+    wordCell.textContent = words[i];
+    row.appendChild(letterCell);
+    row.appendChild(wordCell);
+    tableEl.appendChild(row);
+  }
+}
+
+populateTable(natoTableEl, nato);
+populateTable(swedishTableEl, swedish);
+
+startQuiz();
+```
+
+This code will create a quiz where a random letter is displayed and the user has to enter the corresponding word from the selected phonetic alphabet. The user's history of answers is displayed at the bottom of the page, with correct answers in green and incorrect answers in red. The percentage of correct answers is also displayed. The tables of the Nato and Swedish phonetic alphabets are hidden by default and can be toggled by clicking the corresponding button.
